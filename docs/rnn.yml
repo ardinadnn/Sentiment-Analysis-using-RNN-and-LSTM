@@ -1,0 +1,16 @@
+Analisis Sentimen (RNN)
+---
+tags:
+  - name: Analisis Sentimen (RNN)
+parameters:
+  - name: teks
+    in: formData
+    required: true
+    type: string
+responses:
+    '200':
+      description: Successful response
+    '400':
+      description: Bad RequestQ
+    '500':
+      description: Internal Server Error
