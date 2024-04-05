@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 from keras.models import load_model
-from keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.preprocessing.sequence import pad_sequences
 import string
 import pandas as pd
 from flask import Flask, jsonify, request
@@ -22,24 +22,34 @@ app.json_encoder = LazyJSONEncoder
 
 max_features = 100000
 tokenizer = Tokenizer(num_words=max_features,split=' ',lower=True)
-sentiment = ['positive', 'neutral', 'negative']
+sentiment = ['positive', 'neutral', 'negative'] #yang bener gimana woy
+# sentiment = ['negative', 'neutral', 'positive']
 
 file = open("resources_of_rnn/x_pad_sequences.pickle",'rb')
 feature_file_from_rnn = pickle.load(file)
 file.close()
 
-rnn_model = load_model('model_of_rnn/modelRNN4.h5')
+file = open("resources_of_rnn/x_pad_sequences.pickle",'rb')
+feature_file_from_lstm = pickle.load(file)
+file.close()
+
+rnn_model = load_model('model_of_rnn/modelRNN1.h5')
+lstm_model = load_model('model_of_lstm/modelLSTM.h5')
 #------------------------------------------------------------------------------------
 
 @swag_from("docs/rnn.yml", methods=["POST"])
-@app.route('/inputFormRNN',methods=['POST'])
+@app.route('/inputFormRNN', methods=['POST'])
 def main_RNN():
     teks = request.form.get('teks')
     teks = teks.lower()
     teks = removePunctuation(teks)
     teks = removeWhitespace(teks)
 
-    feature = tokenizer.texts_to_sequences(teks)
+    max_features = 100000
+    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizer.fit_on_texts([teks])
+
+    feature = tokenizer.texts_to_sequences([teks])
     feature = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
 
     prediction = rnn_model.predict(feature)
@@ -150,23 +160,27 @@ def main_lstm():
     teks = request.form.get('teks')
     teks = teks.lower()
     teks = removePunctuation(teks)
-    # teks = removeWhitespace(teks)
+    teks = removeWhitespace(teks)
 
-    # feature = tokenizer.texts_to_sequences(teks)
-    # feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
+    max_features = 100000
+    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizer.fit_on_texts([teks])
 
-    # prediction = lstm_model.predict(feature)
-    # get_sentiment = sentiment[np.argmax(prediction[0])]
+    feature = tokenizer.texts_to_sequences([teks])
+    feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
 
-    # json_response={
-    #     'status_code': 200,
-    #     'description': "Analisis Sentimen",
-    #     'teks': teks,
-    #     'sentiment': get_sentiment
-    # }
+    prediction = lstm_model.predict(feature)
+    get_sentiment = sentiment[np.argmax(prediction[0])]
 
-    # response_data = jsonify(json_response)
-    # return response_data
+    json_response={
+        'status_code': 200,
+        'description': "Analisis Sentimen",
+        'teks': teks,
+        'sentiment': get_sentiment
+    }
+
+    response_data = jsonify(json_response)
+    return response_data
 
 if __name__ == '__main__':
     app.run() #debug=True
