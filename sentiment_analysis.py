@@ -24,19 +24,27 @@ app = CustomFlaskAppWithEncoder(__name__)
 app.json_encoder = LazyJSONEncoder
 
 max_features = 100000
-tokenizer = Tokenizer(num_words=max_features,split=' ',lower=True)
+# tokenizer = Tokenizer(num_words=max_features,split=' ',lower=True)
 # sentiment = ['positive', 'neutral', 'negative'] #yang bener gimana cuy
 sentiment = ['negative', 'neutral', 'positive']
 
-file = open("resources_of_rnn/x_pad_sequences.pickle",'rb')
+file = open("resources_of_rnn/x_pad_sequences2.pickle",'rb')
 feature_file_from_rnn = pickle.load(file)
 file.close()
 
-file = open("resources_of_rnn/x_pad_sequences.pickle",'rb')
+file = open("resources_of_lstm/x_pad_sequences.pickle",'rb')
 feature_file_from_lstm = pickle.load(file)
 file.close()
 
-rnn_model = load_model('model_of_rnn/modelRNN2.h5')
+file = open('resources_of_lstm/tokenizer.pickle', 'rb')
+tokenizerLSTM = pickle.load(file)
+file.close()
+
+file = open('resources_of_rnn/tokenizer2.pickle', 'rb')
+tokenizerRNN = pickle.load(file)
+file.close()
+
+rnn_model = load_model('model_of_rnn/modelRNN_new.h5')
 lstm_model = load_model('model_of_lstm/modelLSTM2.h5')
 #------------------------------------------------------------------------------------
 
@@ -49,10 +57,10 @@ def main_RNN():
     teks = removeWhitespace(teks)
 
     max_features = 100000
-    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
-    tokenizer.fit_on_texts([teks])
+    # tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizerRNN.fit_on_texts([teks])
 
-    feature = tokenizer.texts_to_sequences([teks])
+    feature = tokenizerRNN.texts_to_sequences([teks])
     feature = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
 
     prediction = rnn_model.predict(feature)
@@ -90,20 +98,22 @@ class UploadCSVRNN(Resource):
             datasetOri = pd.read_csv(file,encoding='latin-1')
             datasetOri = datasetOri.astype(str)
             output = pd.DataFrame()
-            dataset = datasetOri.iloc[:,0]
+            datasentimen = datasetOri["sentiment"] #wajib dihapus ntar
+            dataset = datasetOri.iloc[:,1] #ini khusus si data output new
             dataset = dataset.to_frame(name="output")
 
             for column_name in dataset.columns:
                 output[column_name] = dataset[column_name].apply(removePunctuation)
                 output[column_name] = output[column_name].str.lower()
                 output[column_name] = output[column_name].apply(removeWhitespace)
-                output["Sentiment"] = output[column_name].apply(predictRNN)
+                output["Pred_Sentiment"] = output[column_name].apply(predictRNN)
 
             # feature = tokenizer.texts_to_sequences(output???)
             # feature = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
 
             # # prediction = rnn_model.predict(feature)
             # get_sentiment = sentiment[np.argmax(prediction[0])]
+            output = pd.concat([output, datasentimen], axis=1)
                 
             result_json = output.to_json(orient='records')
 
@@ -156,7 +166,7 @@ class UploadCSVLSTM(Resource):
                 output[column_name] = dataset[column_name].apply(removePunctuation)
                 output[column_name] = output[column_name].str.lower()
                 output[column_name] = output[column_name].apply(removeWhitespace)
-                output["Sentiment"] = output[column_name].apply(predictRNN)
+                output["Pred_Sentiment"] = output[column_name].apply(predictLSTM)
 
             # feature = tokenizer.texts_to_sequences(output???)
             # feature = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
@@ -225,11 +235,11 @@ def removeWhitespace(teks):
 
 def predictRNN(teks):
     max_features = 100000
-    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
-    tokenizer.fit_on_texts([teks])
+    # tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizerRNN.fit_on_texts([teks])
 
-    feature = tokenizer.texts_to_sequences([teks])
-    feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
+    feature = tokenizerRNN.texts_to_sequences([teks])
+    feature = pad_sequences(feature, maxlen=feature_file_from_rnn.shape[1])
 
     prediction = rnn_model.predict(feature)
     get_sentiment = sentiment[np.argmax(prediction[0])]
@@ -237,10 +247,10 @@ def predictRNN(teks):
 
 def predictLSTM(teks):
     max_features = 100000
-    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
-    tokenizer.fit_on_texts([teks])
+    # tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizerLSTM.fit_on_texts([teks])
 
-    feature = tokenizer.texts_to_sequences([teks])
+    feature = tokenizerLSTM.texts_to_sequences([teks])
     feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
 
     prediction = lstm_model.predict(feature)
@@ -257,10 +267,10 @@ def main_lstm():
     teks = removeWhitespace(teks)
 
     max_features = 100000
-    tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
-    tokenizer.fit_on_texts([teks])
+    # tokenizer = Tokenizer(num_words=max_features, split=' ', lower=True)
+    tokenizerLSTM.fit_on_texts([teks])
 
-    feature = tokenizer.texts_to_sequences([teks])
+    feature = tokenizerLSTM.texts_to_sequences([teks])
     feature = pad_sequences(feature, maxlen=feature_file_from_lstm.shape[1])
 
     prediction = lstm_model.predict(feature)
