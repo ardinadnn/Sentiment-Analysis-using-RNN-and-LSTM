@@ -32,11 +32,11 @@ file = open("resources_of_rnn/x_pad_sequences2.pickle",'rb')
 feature_file_from_rnn = pickle.load(file)
 file.close()
 
-file = open("resources_of_lstm/x_pad_sequences.pickle",'rb')
+file = open("resources_of_lstm/x_pad_sequences2.pickle",'rb')
 feature_file_from_lstm = pickle.load(file)
 file.close()
 
-file = open('resources_of_lstm/tokenizer.pickle', 'rb')
+file = open('resources_of_lstm/tokenizer2.pickle', 'rb')
 tokenizerLSTM = pickle.load(file)
 file.close()
 
