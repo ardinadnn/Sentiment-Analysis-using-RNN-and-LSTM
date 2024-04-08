@@ -17,7 +17,7 @@ It has four endpoints.
 3. Enter the virtual environment
 > myenv\Scripts\activate
 4. Install module needed by running this code
-> pip install -r requirements. txt
+> pip install -r requirements.txt --no-deps
 5. Go to path below
 > myenv\Lib\site-packages\keras\src\saving\legacy\saved_model\load_context.py
 6. Rewrite "register_load_context_function" to "register_call_context_function" (line 68)
