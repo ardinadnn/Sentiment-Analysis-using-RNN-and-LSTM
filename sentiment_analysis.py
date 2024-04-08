@@ -44,7 +44,7 @@ file = open('resources_of_rnn/tokenizer2.pickle', 'rb')
 tokenizerRNN = pickle.load(file)
 file.close()
 
-rnn_model = load_model('model_of_rnn/modelRNN_new.h5')
+rnn_model = load_model('model_of_rnn/modelRNN_new1.h5')
 lstm_model = load_model('model_of_lstm/modelLSTM2.h5')
 #------------------------------------------------------------------------------------
 
@@ -98,8 +98,8 @@ class UploadCSVRNN(Resource):
             datasetOri = pd.read_csv(file,encoding='latin-1')
             datasetOri = datasetOri.astype(str)
             output = pd.DataFrame()
-            datasentimen = datasetOri["sentiment"] #wajib dihapus ntar
-            dataset = datasetOri.iloc[:,1] #ini khusus si data output new
+            # datasentimen = datasetOri["sentiment"] #wajib dihapus ntar
+            dataset = datasetOri.iloc[:,0] #yang diprediksi kolom 0
             dataset = dataset.to_frame(name="output")
 
             for column_name in dataset.columns:
@@ -113,7 +113,7 @@ class UploadCSVRNN(Resource):
 
             # # prediction = rnn_model.predict(feature)
             # get_sentiment = sentiment[np.argmax(prediction[0])]
-            output = pd.concat([output, datasentimen], axis=1)
+            # output = pd.concat([output, datasentimen], axis=1) #ini pas ngecek aja
                 
             result_json = output.to_json(orient='records')
 
